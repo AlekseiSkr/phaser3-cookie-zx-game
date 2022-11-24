@@ -91,9 +91,11 @@ class Ball extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.setBounce(1);
     this.setPosition(x, y);
-    this.setFriction(10,10)
+    this.setFriction(10, 10);
     this.setVelocity(190, -180); // AHUYENY Diagonal movenement VECTOR
-    this.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, config.width - 150, config.height-151));
+    this.body.setBoundsRectangle(
+      new Phaser.Geom.Rectangle(0, 0, config.width - 150, config.height - 151)
+    );
 
     // this.setVelocity(bv.x, bv.y);
     // bv = null;
@@ -102,7 +104,9 @@ class Ball extends Phaser.Physics.Arcade.Sprite {
   hit() {
     this.setVelocity(0, 700);
     this.isHit = true;
-    this.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, config.width - 150, config.height));
+    this.body.setBoundsRectangle(
+      new Phaser.Geom.Rectangle(0, 0, config.width - 150, config.height)
+    );
   }
 
   preUpdate(time, delta) {
@@ -171,10 +175,28 @@ class Game_Scene extends Phaser.Scene {
     this.bullets = new Bullets(this);
     this.balls = new Balls(this);
     this.player = this.physics.add.image(300, 200, "player");
-    this.hitBox = this.add.rectangle(config.width/2 - 75, config.height - missH/2, 300, 150, 0x9966ff);
-    this.missBoxL = this.add.rectangle(0+missW/2 - 25, config.height - missH/2, missW, missH, 0x6699ff);
-    this.missBoxR = this.add.rectangle(config.width - missW/2 - 150, config.height - missH/2, missW, missH, 0xa3b899);
-    this.sideHUD = this.add.rectangle(725, 300, 150, 600, 0xAE99FF);
+    this.hitBox = this.add.rectangle(
+      config.width / 2 - 75,
+      config.height - missH / 2,
+      300,
+      150,
+      0x9966ff
+    );
+    this.missBoxL = this.add.rectangle(
+      0 + missW / 2 - 25,
+      config.height - missH / 2,
+      missW,
+      missH,
+      0x6699ff
+    );
+    this.missBoxR = this.add.rectangle(
+      config.width - missW / 2 - 150,
+      config.height - missH / 2,
+      missW,
+      missH,
+      0xa3b899
+    );
+    this.sideHUD = this.add.rectangle(725, 300, 150, 600, 0xae99ff);
 
     // this.hitBox.setStrokeStyle(4, 0xefc53f);
     this.bullets.children;
@@ -197,12 +219,11 @@ class Game_Scene extends Phaser.Scene {
     this.missBoxL.setActive(true);
     this.missBoxR.setActive(true);
     this.hitBox.body.setAllowGravity(false);
-    this.missBoxL.body.setAllowGravity(false)
-    this.missBoxR.body.setAllowGravity(false)
+    this.missBoxL.body.setAllowGravity(false);
+    this.missBoxR.body.setAllowGravity(false);
     // this.hitBox.setGravity(0, (config.physics.arcade.gravity.y) * -1);
     // missBoxL.setGravity(0, (config.physics.arcade.gravity.y) * -1);
     // this.hitBox.setGravity(0, (config.physics.arcade.gravity.y) * -1);
-
 
     //Ball Setup
     this.balls.spawnBall(300, 200);
@@ -216,7 +237,7 @@ class Game_Scene extends Phaser.Scene {
     this.player.enableBody(true);
     this.player.setPushable(false);
     this.player.setCollideWorldBounds(true);
-    this.player.setGravity(0, (config.physics.arcade.gravity.y) * -1);
+    this.player.setGravity(0, config.physics.arcade.gravity.y * -1);
 
     //Input Setup
     this.inputKeys = this.input.keyboard.addKeys({
@@ -263,42 +284,49 @@ class Game_Scene extends Phaser.Scene {
       ball.disableBody(true, true);
       ball.setActive(false);
       if (ball.isHit) {
-        score++
-      console.log(score);
-        tween.pause();
-        tween.restart();
-      }
-    });
-
-    //Add on Overlap Event to game class
-    this.physics.add.overlap(this.balls, this.missBoxL, function (missBoxL, ball) {
-      ball.disableBody(true, true);
-      ball.setActive(false);
-      
-      if (ball.isHit) {
-        score++
-      console.log(score);
-        tween.pause();
-        tween.restart();
-      }
-    });
-
-    //Add on Overlap Event to game class
-    this.physics.add.overlap(this.balls, this.missBoxR, function (missBoxR, ball) {
-      ball.disableBody(true, true);
-      ball.setActive(false);
-    
-      if (ball.isHit) {
-        tween.pause();
         score++;
         console.log(score);
+        tween.pause();
         tween.restart();
       }
     });
+
+    //Add on Overlap Event to game class
+    this.physics.add.overlap(
+      this.balls,
+      this.missBoxL,
+      function (missBoxL, ball) {
+        ball.disableBody(true, true);
+        ball.setActive(false);
+
+        if (ball.isHit) {
+          score++;
+          console.log(score);
+          tween.pause();
+          tween.restart();
+        }
+      }
+    );
+
+    //Add on Overlap Event to game class
+    this.physics.add.overlap(
+      this.balls,
+      this.missBoxR,
+      function (missBoxR, ball) {
+        ball.disableBody(true, true);
+        ball.setActive(false);
+
+        if (ball.isHit) {
+          tween.pause();
+          score++;
+          console.log(score);
+          tween.restart();
+        }
+      }
+    );
   }
 
   update() {
-
     //[FOR TESTING] Gib more if runout
     this.balls.countActive(true) < 4 ? this.balls.spawnBall(280, 180) : 0x0;
     this.balls.countActive(true) < 4 ? this.balls.spawnBall(280, 180) : 0x0;
@@ -354,7 +382,7 @@ const config = {
 
 let game = new Phaser.Game(config);
 
-fetch('./Scores.json')
-  .then(response => response.json())
-  .then(data => console.log(data))
-  .catch(error => console.log(error));
+fetch("./Scores.json")
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => console.log(error));
