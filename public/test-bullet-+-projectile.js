@@ -93,6 +93,7 @@ class Ball extends Phaser.Physics.Arcade.Sprite {
     this.setPosition(x, y);
     this.setFriction(10,10)
     this.setVelocity(190, -180); // AHUYENY Diagonal movenement VECTOR
+    this.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, config.width - 150, config.height-151));
 
     // this.setVelocity(bv.x, bv.y);
     // bv = null;
@@ -101,6 +102,7 @@ class Ball extends Phaser.Physics.Arcade.Sprite {
   hit() {
     this.setVelocity(0, 700);
     this.isHit = true;
+    this.body.setBoundsRectangle(new Phaser.Geom.Rectangle(0, 0, config.width - 150, config.height));
   }
 
   preUpdate(time, delta) {
@@ -143,7 +145,7 @@ class Balls extends Phaser.Physics.Arcade.Group {
   }
 }
 
-class Example extends Phaser.Scene {
+class Game_Scene extends Phaser.Scene {
   constructor() {
     super();
     this.balls;
@@ -161,18 +163,20 @@ class Example extends Phaser.Scene {
 
   create() {
     // //Test-Bullet Setup
+    var missW = 200;
+    var missH = 150;
+    var score = 0;
 
     // this.enemy.hit = new Ball(this);
     this.bullets = new Bullets(this);
     this.balls = new Balls(this);
     this.player = this.physics.add.image(300, 200, "player");
-    this.hitBox = this.add.rectangle(400, 552, 300, 148, 0x9966ff);
-    var missBox = this.add.rectangle(100, 500, 100, 100, 0x6699ff);
-    this.physics.add.existing(this.hitBox, missBox);
-    var a = Phaser.Actions.RandomRectangle(this.balls.getChildren(), this.balls.customBounds);
-    a;
+    this.hitBox = this.add.rectangle(config.width/2 - 75, config.height - missH/2, 300, 150, 0x9966ff);
+    this.missBoxL = this.add.rectangle(0+missW/2 - 25, config.height - missH/2, missW, missH, 0x6699ff);
+    this.missBoxR = this.add.rectangle(config.width - missW/2 - 150, config.height - missH/2, missW, missH, 0xa3b899);
+    this.sideHUD = this.add.rectangle(725, 300, 150, 600, 0xAE99FF);
 
-    this.hitBox.setStrokeStyle(4, 0xefc53f);
+    // this.hitBox.setStrokeStyle(4, 0xefc53f);
     this.bullets.children;
     this.balls.children;
     console.log("spawn test >", this.balls);
@@ -183,11 +187,22 @@ class Example extends Phaser.Scene {
     Phaser.Actions.SetXY(this.balls.getChildren(), -100, -200, 32);
     Phaser.Actions.SetXY(this.bullets.getChildren(), -100, -200, 32);
 
-    console.log('[CUSTOM BOUNDS TEST] with >', this.balls.customBounds);
-
-
     //HitBox Setup
+    this.physics.add.existing(this.missBoxL);
+    this.physics.add.existing(this.hitBox);
+    this.physics.add.existing(this.missBoxR);
+    // this.physics.add.existing(missBoxL);
+    // this.physics.add.existing(missBoxR);
     this.hitBox.setActive(true);
+    this.missBoxL.setActive(true);
+    this.missBoxR.setActive(true);
+    this.hitBox.body.setAllowGravity(false);
+    this.missBoxL.body.setAllowGravity(false)
+    this.missBoxR.body.setAllowGravity(false)
+    // this.hitBox.setGravity(0, (config.physics.arcade.gravity.y) * -1);
+    // missBoxL.setGravity(0, (config.physics.arcade.gravity.y) * -1);
+    // this.hitBox.setGravity(0, (config.physics.arcade.gravity.y) * -1);
+
 
     //Ball Setup
     this.balls.spawnBall(300, 200);
@@ -224,7 +239,6 @@ class Example extends Phaser.Scene {
       targets: [this.balls.getChildren()],
       duration: 100,
       alpha: 0.2,
-      // tint: 0xffffff,
       loop: 3,
       yoyo: true,
       paused: true,
@@ -249,7 +263,35 @@ class Example extends Phaser.Scene {
       ball.disableBody(true, true);
       ball.setActive(false);
       if (ball.isHit) {
+        score++
+      console.log(score);
         tween.pause();
+        tween.restart();
+      }
+    });
+
+    //Add on Overlap Event to game class
+    this.physics.add.overlap(this.balls, this.missBoxL, function (missBoxL, ball) {
+      ball.disableBody(true, true);
+      ball.setActive(false);
+      
+      if (ball.isHit) {
+        score++
+      console.log(score);
+        tween.pause();
+        tween.restart();
+      }
+    });
+
+    //Add on Overlap Event to game class
+    this.physics.add.overlap(this.balls, this.missBoxR, function (missBoxR, ball) {
+      ball.disableBody(true, true);
+      ball.setActive(false);
+    
+      if (ball.isHit) {
+        tween.pause();
+        score++;
+        console.log(score);
         tween.restart();
       }
     });
@@ -307,7 +349,12 @@ const config = {
       gravity: { y: 200 },
     },
   },
-  scene: Example,
+  scene: Game_Scene,
 };
 
 let game = new Phaser.Game(config);
+
+fetch('./Scores.json')
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.log(error));
